@@ -1,0 +1,130 @@
+Documento Mestre — Morcegão Lanches
+Especificação funcional e técnica — V1
+1. Visão geral e objetivo
+O projeto consiste em um sistema web de cardápio digital e pedidos para o Morcegão Lanches, com foco em uma experiência mais moderna, organizada e simples para o cliente e em uma administração básica dos pedidos e do cardápio pelo proprietário.
+O sistema será desenvolvido como um projeto real, inicialmente para um único estabelecimento, mantendo uma arquitetura organizada e reutilizável sem transformar a V1 em um SaaS multiempresa.
+2. Público e usuários
+Cliente: acessa o cardápio, pesquisa produtos, monta o carrinho, informa seus dados e finaliza o pedido. Não precisa criar conta.
+Proprietário: acessa o painel administrativo para administrar pedidos, produtos, categorias e bairros/taxas.
+Desenvolvedor: mantém controle técnico sobre código, banco, backend, implantação e alterações estruturais.
+3. Escopo da V1
+Cardápio digital, categorias, busca, produtos, promoções simples, carrinho, checkout, criação de pedidos, painel administrativo, autenticação do administrador, gerenciamento de produtos/categorias/bairros, status de pedidos e abertura de conversa no WhatsApp com mensagem pré-preenchida.
+4. Fluxo completo do cliente
+Site → Hero → categorias/busca → produtos → carrinho → dados do cliente → tipo de atendimento → endereço ou mesa quando necessário → pagamento → resumo → finalização do pedido.
+5. Fluxo do proprietário
+Login → painel → visualizar pedido → aceitar/rejeitar → atualizar status → abrir WhatsApp com mensagem preenchida.
+O proprietário também poderá administrar produtos, preços, disponibilidade, categorias e bairros/taxas.
+6. Cardápio
+O cardápio terá identidade visual baseada na marca Morcegão, com predominância de vermelho, amarelo/dourado e preto/cinza escuro.
+O Hero poderá utilizar carrossel ou vídeo/imagem em loop. O logo poderá aparecer no cabeçalho e como marca d'água visual discreta durante a navegação.
+O layout será responsivo. No desktop, categorias ficam à esquerda e produtos à direita; no mobile, categorias podem ter rolagem horizontal ou ser acessadas por botão.
+7. Categorias
+As categorias serão carregadas do banco e poderão ser ativadas/desativadas e reordenadas pelo administrador.
+Exemplos observados no cardápio atual: Hambúrgueres, Hot Dogs, Combos, Porções, Bebidas, Doces e outras categorias específicas do estabelecimento.
+8. Produtos
+Campos: id, category_id, name, description, price, old_price, image_url, active e available.
+Os produtos terão imagem, nome, descrição e preço. Promoções podem mostrar preço atual e preço anterior.
+V1 não terá adicionais ou personalização de produtos.
+9. Promoções
+Promoções serão simples, representadas principalmente por preço atual e preço anterior, com possibilidade de ativar/desativar a oferta.
+Não haverá um mecanismo complexo de campanhas ou regras promocionais na V1.
+10. Carrinho
+O cliente poderá adicionar produtos, alterar quantidade, remover itens e visualizar subtotal e total.
+O carrinho será mantido durante a navegação do cliente.
+11. Checkout
+Campos principais: nome, telefone, serviço, pagamento e resumo do pedido.
+Serviços: Retirar, Delivery e Atendimento na mesa.
+Delivery solicita bairro, rua, número, complemento e demais dados necessários.
+Mesa solicita o número da mesa.
+Pagamento: cartão, dinheiro ou Pix.
+Dinheiro solicita o valor entregue pelo cliente e calcula o troco.
+Pix será apenas registrado como forma de pagamento; não haverá gateway de pagamento online.
+12. Delivery
+O cliente selecionará um bairro atendido pelo estabelecimento. Cada bairro poderá possuir uma taxa de entrega diferente.
+Endereço completo será exigido para Delivery.
+As informações de bairros e taxas serão administradas pelo proprietário.
+13. Retirada
+Na retirada, o cliente não precisará informar endereço.
+14. Atendimento na mesa
+O pedido poderá ser identificado pelo número da mesa. O sistema não terá, na V1, um módulo avançado de gestão de mesas.
+15. Formas de pagamento
+Cartão, dinheiro e Pix.
+Não haverá integração com adquirente, banco, carteira digital ou gateway de pagamento.
+16. Pedidos e status
+Cada pedido armazenará cliente, itens, quantidades, preços, valores, serviço, pagamento, endereço/mesa quando aplicável e data.
+Status previstos: NEW, ACCEPTED, REJECTED, PREPARING, READY, OUT_FOR_DELIVERY e COMPLETED. A implementação poderá manter somente os estados necessários para a operação real, evitando complexidade desnecessária.
+17. WhatsApp
+O sistema armazenará o telefone informado pelo cliente e permitirá ao proprietário abrir uma conversa no WhatsApp com mensagem pré-preenchida.
+A mensagem poderá conter nome, itens, total e confirmação do pedido.
+O envio será manual pelo proprietário. Não haverá API oficial do WhatsApp na V1.
+18. Painel administrativo
+Funções: visualizar pedidos, aceitar/rejeitar pedidos, alterar status, abrir WhatsApp, cadastrar/editar produtos, alterar preços, ativar/desativar produtos, gerenciar categorias e gerenciar bairros/taxas.
+19. Permissões
+V1 terá somente um tipo de conta administrativa: proprietário.
+Não haverá cadastro público, contas de clientes ou múltiplos níveis de funcionários.
+20. Banco de dados
+users: id, email, password_hash, created_at.
+categories: id, name, description, active, position.
+products: id, category_id, name, description, price, old_price, image_url, active, available.
+neighborhoods: id, name, delivery_fee, active.
+customers: id, name, phone.
+orders: id, customer_id, service_type, status, payment_method, subtotal, delivery_fee, total, cash_amount, change_amount, dados de endereço para delivery, table_number e created_at.
+order_items: id, order_id, product_id, product_name, quantity, unit_price, subtotal.
+order_items armazenará nome e preço do produto no momento da compra para preservar o histórico mesmo se o produto ou preço mudar posteriormente.
+21. Backend/API
+Stack: FastAPI + PostgreSQL.
+Endpoints públicos conceituais: GET /categories, GET /products, GET /products?category_id=1, GET /neighborhoods e POST /orders.
+Endpoints administrativos conceituais: POST /auth/login, POST /products, PUT /products/{id}, PATCH /products/{id}/availability, POST /categories, PUT /categories/{id}, POST /neighborhoods, PUT /neighborhoods/{id}, GET /orders, GET /orders/{id} e PATCH /orders/{id}/status.
+O backend deverá validar os dados recebidos e não confiar somente nas validações do frontend.
+22. Frontend
+Stack: React + TypeScript.
+Um único projeto React conterá a área pública e a área administrativa.
+Rotas públicas: /, /cardapio e /checkout.
+Rotas administrativas: /admin/login, /admin, /admin/pedidos, /admin/produtos, /admin/categorias e /admin/bairros.
+23. Autenticação
+Somente o proprietário terá conta administrativa.
+Login por email e senha, sem cadastro público.
+Senha armazenada somente como hash.
+Rotas administrativas e operações administrativas serão protegidas também no backend.
+Não haverá recuperação de senha por email na V1.
+24. Hospedagem
+Arquitetura prevista: frontend, backend e PostgreSQL separados.
+Banco preferencial: PostgreSQL em Supabase.
+Frontend: Vercel ou Render.
+Backend: Render com FastAPI.
+A implantação poderá começar utilizando planos gratuitos adequados ao desenvolvimento/testes e migrar para planos pagos quando houver necessidade real de produção.
+25. Custos
+O projeto deve evitar custos recorrentes desnecessários.
+Durante desenvolvimento, serão priorizados serviços gratuitos.
+Em produção, o custo dependerá de hospedagem, banco, domínio, uso e planos escolhidos. A referência inicial é manter uma estrutura simples e de baixo custo, sem AWS/VPS/Kubernetes/Redis para a V1.
+26. Segurança
+Produção utilizará HTTPS.
+Senhas nunca serão armazenadas em texto puro.
+Operações administrativas exigirão autenticação e autorização no backend.
+API validará entradas e dados de pedidos.
+Cliente não terá acesso direto ao banco.
+Não serão armazenados dados de cartão ou informações bancárias.
+Não haverá infraestrutura empresarial de antifraude ou MFA na V1.
+27. Fora da V1
+Login de clientes; aplicativo mobile; pagamento online; API oficial do WhatsApp; integração com SuperCardápio; estoque; financeiro; fidelidade; cupons; IA; múltiplas lojas; múltiplos funcionários/permissões; relatórios avançados; personalização/adicionais; notificações automáticas; avaliações; impressora de pedidos; integração com plataformas externas de delivery; módulo avançado de mesas.
+28. Backlog / Futuro
+Personalização e adicionais; favoritos; histórico/repetição de pedidos; avaliações; cupons; fidelidade; atualização automática de status; notificações; impressão de pedidos; automação oficial do WhatsApp; dashboard e relatórios; estoque; funcionários/permissões; integrações externas; suporte multiempresa e domínio personalizado.
+29. Roadmap
+Fase 1 — preparação: repositório, estrutura, React/TypeScript, FastAPI, PostgreSQL e ambiente.
+Fase 2 — backend: banco, migrations, autenticação, APIs e validações.
+Fase 3 — cardápio: layout, Hero, categorias, busca, produtos, promoções e responsividade.
+Fase 4 — carrinho: adicionar, quantidade, remover e cálculos.
+Fase 5 — checkout: dados, serviço, endereço/mesa, pagamento, troco, resumo e envio.
+Fase 6 — admin: login, pedidos, WhatsApp, produtos, categorias e bairros.
+Fase 7 — integração/testes: fluxo completo, mobile, desktop, validações e segurança.
+Fase 8 — publicação: banco/backend/frontend de produção, domínio se necessário, HTTPS e teste real.
+30. Regras de escopo e decisões importantes
+V1 deve permanecer pequena e funcional.
+Novas ideias não entram automaticamente na V1; devem ir para o backlog.
+Não implementar funcionalidades somente porque parecem interessantes se não forem necessárias para o objetivo principal.
+Fluxo principal prioritário: cardápio → carrinho → checkout → pedido → painel → WhatsApp → publicação.
+O sistema é inicialmente para o Morcegão, mas deve ser organizado de forma que possa ser reutilizado em outro estabelecimento sem reescrever toda a arquitetura.
+Lovable e o cardápio atual servem como referências visuais/funcionais; a implementação será própria.
+Antes de codificar funcionalidades importantes, seus requisitos devem estar definidos e registrados neste documento.
+Estado do documento
+Documento Mestre da V1 consolidado a partir das decisões tomadas no planejamento. Ele funciona como fonte de verdade do projeto. Alterações futuras devem ser registradas explicitamente para evitar perda de contexto e aumento involuntário do escopo.
